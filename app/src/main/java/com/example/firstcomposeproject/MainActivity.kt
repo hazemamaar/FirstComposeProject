@@ -3,151 +3,62 @@ package com.example.firstcomposeproject
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.animation.core.FastOutLinearInEasing
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.Text
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.*
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlin.random.Random
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-//            val painter = painterResource(id = R.drawable.amado)
-//            val description = "amado is the best naruto"
-//            val title = "amado is the best naruto"
-
-            Column(modifier = Modifier.fillMaxSize()) {
-                val colorState = remember {
-                    mutableStateOf(Color.Yellow)
-                }
-
-                ColorBox(
-                    Modifier
-                        .weight(1f)
-                        .fillMaxSize()
-                ) {
-                    colorState.value = it
-                }
-                Box(modifier = Modifier
-                    .weight(1f)
-                    .background(colorState.value)
-                    .fillMaxSize())
+            Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                CircularProgressBar(percentage = .8f, number =100 )
             }
-
-//            Box(
-//                modifier = Modifier
-//                    .fillMaxSize()
-//                    .background(Color.Black)
-//            ) {
-//                Text(text = buildAnnotatedString {
-//                    withStyle(
-//                        style = SpanStyle(
-//                                 color = Color.Green
-//                        , fontSize = 40.sp
-//
-//                        )
-//                    ){
-//                        append("J")
-//                    }
-//                    append("etpack")
-//                    withStyle(
-//                        style = SpanStyle(
-//                            color = Color.Green
-//                            , fontSize = 40.sp
-//                        )
-//                    ){
-//                        append("C")
-//                    }
-//                    append("ompose")
-//                },
-//                    color = Color.White,
-//                    textAlign = TextAlign.Center,
-//                    textDecoration = TextDecoration.Underline,
-//                    fontWeight = FontWeight.Bold,
-//                    fontSize = 30.sp)
-//
-//            }
         }
     }
 }
 
-
 @Composable
-fun ImageCard(
-    painter: Painter,
-    title: String,
-    modifier: Modifier = Modifier,
-    contentDescription: String,
+fun CircularProgressBar(
+    percentage: Float,
+    number: Int,
+    color: Color = Color.Cyan,
+    fontSize: TextUnit = 25.sp,
+    strokeWith: Dp = 8.dp,
+    radius: Dp = 80.dp,
+    animDuration: Int = 1000,
+    animDelay: Int = 0,
 ) {
-    Card(
-        modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(15.dp),
-        elevation = 5.dp
-    ) {
-        Box(modifier = Modifier.height(300.dp)) {
-            Image(
-                painter = painter,
-                contentDescription = contentDescription,
-                contentScale = ContentScale.Crop
-            )
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(
-                        Brush.verticalGradient(
-                            colors = listOf(
-                                Color.Transparent,
-                                Color.Black
-                            ), startY = 300f
-                        )
-                    )
-            ) {
-
-            }
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(12.dp),
-                contentAlignment = Alignment.BottomStart
-            ) {
-                Text(text = title, style = TextStyle(color = Color.White, fontSize = 16.sp))
-
-            }
-
-
-        }
-
-
+    var animPlayed by remember {
+        mutableStateOf(false)
     }
-}
-
-@Composable
-fun ColorBox(modifier: Modifier = Modifier, updateColor: (Color) -> Unit) {
-    Box(modifier = modifier
-        .background(color = Color.Green)
-        .clickable {
-            updateColor(
-                Color(
-                    Random.nextFloat(),
-                    Random.nextFloat(),
-                    Random.nextFloat(),
-                    1f
-                )
-            )
-        })
+    val currentPercentage by animateFloatAsState(
+        targetValue = if (animPlayed) percentage else 0f,
+        animationSpec = tween(durationMillis = animDuration, delayMillis = animDelay,
+            FastOutLinearInEasing)
+    )
+     LaunchedEffect(key1 = true ){
+         animPlayed =true
+     }
+    Box(contentAlignment = Alignment.Center, modifier = Modifier.size(radius * 2f)) {
+        Canvas(modifier = Modifier.size(radius * 2f) ){
+            drawArc(color=color , -90f,360*currentPercentage, style = Stroke(strokeWith.toPx(), cap = StrokeCap.Round), useCenter = false)
+        }
+       Text(text = (currentPercentage * number).toInt().toString(), color=Color.Black, fontSize = fontSize)
+    }
 }
